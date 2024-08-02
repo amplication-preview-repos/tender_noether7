@@ -10,5 +10,6 @@ export type UserCreateInput = {
   password: string;
   profiles?: ProfileCreateNestedManyWithoutUsersInput;
   roles: InputJsonValue;
+  userName?: string | null;
   username: string;
 };

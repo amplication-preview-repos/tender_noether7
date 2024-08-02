@@ -10,5 +10,6 @@ export type UserWhereInput = {
   id?: StringFilter;
   lastName?: StringNullableFilter;
   profiles?: ProfileListRelationFilter;
+  userName?: StringNullableFilter;
   username?: StringFilter;
 };

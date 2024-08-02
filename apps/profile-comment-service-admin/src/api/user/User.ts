@@ -12,5 +12,6 @@ export type User = {
   profiles?: Array<Profile>;
   roles: JsonValue;
   updatedAt: Date;
+  userName: string | null;
   username: string;
 };

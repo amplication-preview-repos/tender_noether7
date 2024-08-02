@@ -15,10 +15,11 @@ import {
   IsString,
   MaxLength,
   IsOptional,
+  IsDate,
   ValidateNested,
 } from "class-validator";
-import { UserWhereUniqueInput } from "../../user/base/UserWhereUniqueInput";
 import { Type } from "class-transformer";
+import { UserWhereUniqueInput } from "../../user/base/UserWhereUniqueInput";
 
 @InputType()
 class CommentCreateInput {
@@ -33,6 +34,29 @@ class CommentCreateInput {
     nullable: true,
   })
   content?: string | null;
+
+  @ApiProperty({
+    required: false,
+    type: String,
+  })
+  @IsString()
+  @MaxLength(1000)
+  @IsOptional()
+  @Field(() => String, {
+    nullable: true,
+  })
+  creator?: string | null;
+
+  @ApiProperty({
+    required: false,
+  })
+  @IsDate()
+  @Type(() => Date)
+  @IsOptional()
+  @Field(() => Date, {
+    nullable: true,
+  })
+  dateCreated?: Date | null;
 
   @ApiProperty({
     required: false,

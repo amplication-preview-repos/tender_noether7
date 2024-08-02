@@ -16,17 +16,35 @@ import * as errors from "../../errors";
 import { Request } from "express";
 import { plainToClass } from "class-transformer";
 import { ApiNestedQuery } from "../../decorators/api-nested-query.decorator";
+import * as nestAccessControl from "nest-access-control";
+import * as defaultAuthGuard from "../../auth/defaultAuth.guard";
 import { CommentService } from "../comment.service";
+import { AclValidateRequestInterceptor } from "../../interceptors/aclValidateRequest.interceptor";
+import { AclFilterResponseInterceptor } from "../../interceptors/aclFilterResponse.interceptor";
 import { CommentCreateInput } from "./CommentCreateInput";
 import { Comment } from "./Comment";
 import { CommentFindManyArgs } from "./CommentFindManyArgs";
 import { CommentWhereUniqueInput } from "./CommentWhereUniqueInput";
 import { CommentUpdateInput } from "./CommentUpdateInput";
 
+@swagger.ApiBearerAuth()
+@common.UseGuards(defaultAuthGuard.DefaultAuthGuard, nestAccessControl.ACGuard)
 export class CommentControllerBase {
-  constructor(protected readonly service: CommentService) {}
+  constructor(
+    protected readonly service: CommentService,
+    protected readonly rolesBuilder: nestAccessControl.RolesBuilder
+  ) {}
+  @common.UseInterceptors(AclValidateRequestInterceptor)
   @common.Post()
   @swagger.ApiCreatedResponse({ type: Comment })
+  @nestAccessControl.UseRoles({
+    resource: "Comment",
+    action: "create",
+    possession: "any",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async createComment(
     @common.Body() data: CommentCreateInput
   ): Promise<Comment> {
@@ -43,6 +61,8 @@ export class CommentControllerBase {
       select: {
         content: true,
         createdAt: true,
+        creator: true,
+        dateCreated: true,
         id: true,
         updatedAt: true,
 
@@ -55,9 +75,18 @@ export class CommentControllerBase {
     });
   }
 
+  @common.UseInterceptors(AclFilterResponseInterceptor)
   @common.Get()
   @swagger.ApiOkResponse({ type: [Comment] })
   @ApiNestedQuery(CommentFindManyArgs)
+  @nestAccessControl.UseRoles({
+    resource: "Comment",
+    action: "read",
+    possession: "any",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async comments(@common.Req() request: Request): Promise<Comment[]> {
     const args = plainToClass(CommentFindManyArgs, request.query);
     return this.service.comments({
@@ -65,6 +94,8 @@ export class CommentControllerBase {
       select: {
         content: true,
         createdAt: true,
+        creator: true,
+        dateCreated: true,
         id: true,
         updatedAt: true,
 
@@ -77,9 +108,18 @@ export class CommentControllerBase {
     });
   }
 
+  @common.UseInterceptors(AclFilterResponseInterceptor)
   @common.Get("/:id")
   @swagger.ApiOkResponse({ type: Comment })
   @swagger.ApiNotFoundResponse({ type: errors.NotFoundException })
+  @nestAccessControl.UseRoles({
+    resource: "Comment",
+    action: "read",
+    possession: "own",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async comment(
     @common.Param() params: CommentWhereUniqueInput
   ): Promise<Comment | null> {
@@ -88,6 +128,8 @@ export class CommentControllerBase {
       select: {
         content: true,
         createdAt: true,
+        creator: true,
+        dateCreated: true,
         id: true,
         updatedAt: true,
 
@@ -106,9 +148,18 @@ export class CommentControllerBase {
     return result;
   }
 
+  @common.UseInterceptors(AclValidateRequestInterceptor)
   @common.Patch("/:id")
   @swagger.ApiOkResponse({ type: Comment })
   @swagger.ApiNotFoundResponse({ type: errors.NotFoundException })
+  @nestAccessControl.UseRoles({
+    resource: "Comment",
+    action: "update",
+    possession: "any",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async updateComment(
     @common.Param() params: CommentWhereUniqueInput,
     @common.Body() data: CommentUpdateInput
@@ -128,6 +179,8 @@ export class CommentControllerBase {
         select: {
           content: true,
           createdAt: true,
+          creator: true,
+          dateCreated: true,
           id: true,
           updatedAt: true,
 
@@ -151,6 +204,14 @@ export class CommentControllerBase {
   @common.Delete("/:id")
   @swagger.ApiOkResponse({ type: Comment })
   @swagger.ApiNotFoundResponse({ type: errors.NotFoundException })
+  @nestAccessControl.UseRoles({
+    resource: "Comment",
+    action: "delete",
+    possession: "any",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async deleteComment(
     @common.Param() params: CommentWhereUniqueInput
   ): Promise<Comment | null> {
@@ -160,6 +221,8 @@ export class CommentControllerBase {
         select: {
           content: true,
           createdAt: true,
+          creator: true,
+          dateCreated: true,
           id: true,
           updatedAt: true,
 

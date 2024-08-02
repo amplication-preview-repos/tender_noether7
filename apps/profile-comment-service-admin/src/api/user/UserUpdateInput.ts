@@ -10,5 +10,6 @@ export type UserUpdateInput = {
   password?: string;
   profiles?: ProfileUpdateManyWithoutUsersInput;
   roles?: InputJsonValue;
+  userName?: string | null;
   username?: string;
 };
